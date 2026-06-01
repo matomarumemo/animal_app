@@ -77,21 +77,26 @@ const comments = [
 ];
 
 const keywords = [
-  { word: "眠い", stat: "深夜テンション", boost: 20 },
-  { word: "疲れた", stat: "カオス度", boost: 15 },
-  { word: "最高", stat: "深夜テンション", boost: 25 },
-  { word: "やばい", stat: "カオス度", boost: 18 },
-  { word: "無理", stat: "無駄度", boost: 22 },
-  { word: "楽しい", stat: "深夜テンション", boost: 15 },
-  { word: "辛い", stat: "猫背指数", boost: 20 },
-  { word: "わからん", stat: "悟りレベル", boost: 25 },
-  { word: "適当", stat: "無駄度", boost: 30 },
-  { word: "死にたい", stat: "カオス度", boost: 35 },
-  { word: "生きてる", stat: "悟りレベル", boost: 15 },
-  { word: "仕事", stat: "カオス度", boost: 20 },
-  { word: "寝たい", stat: "深夜テンション", boost: 25 },
-  { word: "面白い", stat: "深夜テンション", boost: 18 },
-  { word: "つらい", stat: "猫背指数", boost: 22 },
+  { word: "眠い", stat: "深夜テンション", boost: 20, feedback: "『眠い』という言葉から、睡眠不足が限界に近いのが伝わってきます..." },
+  { word: "疲れた", stat: "カオス度", boost: 15, feedback: "『疲れた』という言葉から、かなり無理をされているのが伝わってきます..." },
+  { word: "最高", stat: "深夜テンション", boost: 25, feedback: "『最高』という言葉から、今のテンションがMAXなのが伝わってきます..." },
+  { word: "やばい", stat: "カオス度", boost: 18, feedback: "『やばい』という言葉から、何かが予測不能な状態にあるのが伝わってきます..." },
+  { word: "無理", stat: "無駄度", boost: 22, feedback: "『無理』という言葉から、現状に無理を感じているのが伝わってきます..." },
+  { word: "楽しい", stat: "深夜テンション", boost: 15, feedback: "『楽しい』という言葉から、ポジティブなエネルギーを感じ取れます..." },
+  { word: "辛い", stat: "猫背指数", boost: 20, feedback: "『辛い』という言葉から、心身ともに負担がかかっているのが伝わってきます..." },
+  { word: "わからん", stat: "悟りレベル", boost: 25, feedback: "『わからん』という言葉から、悟りの境地に近づいているのか、単に諦めているのか..." },
+  { word: "適当", stat: "無駄度", boost: 30, feedback: "『適当』という言葉から、無駄を楽しむ才能の片鱗が見えます..." },
+  { word: "死にたい", stat: "カオス度", boost: 35, feedback: "『死にたい』という言葉から、精神的なカオスが極まっているのが伝わってきます..." },
+  { word: "生きてる", stat: "悟りレベル", boost: 15, feedback: "『生きてる』という言葉から、生への執着と悟りの狭間にいるのが伝わってきます..." },
+  { word: "仕事", stat: "カオス度", boost: 20, feedback: "『仕事』という言葉から、社会的なプレッシャーを感じているのが伝わってきます..." },
+  { word: "寝たい", stat: "深夜テンション", boost: 25, feedback: "『寝たい』という言葉から、深夜テンションが高まっているのが伝わってきます..." },
+  { word: "面白い", stat: "深夜テンション", boost: 18, feedback: "『面白い』という言葉から、好奇心旺盛な性格が伝わってきます..." },
+  { word: "つらい", stat: "猫背指数", boost: 22, feedback: "『つらい』という言葉から、背中が丸くなるほどの負担を感じているのが伝わってきます..." },
+  { word: "頑張る", stat: "カオス度", boost: 20, feedback: "『頑張る』という言葉から、かなり無理をされているのが伝わってきます..." },
+  { word: "忙しい", stat: "カオス度", boost: 25, feedback: "『忙しい』という言葉から、時間に追われているのが伝わってきます..." },
+  { word: "休みたい", stat: "深夜テンション", boost: 20, feedback: "『休みたい』という言葉から、休息を求める魂の叫びが聞こえてきます..." },
+  { word: "やる気", stat: "深夜テンション", boost: 15, feedback: "『やる気』という言葉から、まだ燃え尽きていないのが伝わってきます..." },
+  { word: "めんどくさい", stat: "無駄度", boost: 28, feedback: "『めんどくさい』という言葉から、無駄を極端に嫌う傾向が見えます..." },
 ];
 
 const getStatExplanation = (name: string, value: number) => {
@@ -129,63 +134,74 @@ const getStatExplanation = (name: string, value: number) => {
 
 export default function Home() {
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<{
     animal: string;
     stats: { name: string; value: number }[];
     comment: string;
     rationale: string;
+    feedback: string;
   } | null>(null);
 
   const handleDiagnosis = () => {
-    const charCode = input.length > 0 ? input.charCodeAt(0) : 0;
-    const randomSeed = Math.random();
-    const index = Math.floor((charCode + randomSeed * 1000) % animals.length);
-    const selectedAnimal = animals[index];
+    setIsLoading(true);
 
-    // Extract keywords from input
-    const detectedKeywords = keywords.filter((keyword) =>
-      input.includes(keyword.word)
-    );
+    setTimeout(() => {
+      const charCode = input.length > 0 ? input.charCodeAt(0) : 0;
+      const randomSeed = Math.random();
+      const index = Math.floor((charCode + randomSeed * 1000) % animals.length);
+      const selectedAnimal = animals[index];
 
-    // Generate stats with keyword boosts
-    const stats = [
-      { name: "カオス度", value: Math.floor(randomSeed * 100) },
-      { name: "無駄度", value: Math.floor((randomSeed * 0.7 + 0.3) * 100) },
-      { name: "深夜テンション", value: Math.floor((randomSeed * 0.5 + 0.5) * 100) },
-      { name: "猫背指数", value: Math.floor((randomSeed * 0.8 + 0.2) * 100) },
-      { name: "悟りレベル", value: Math.floor((randomSeed * 0.6 + 0.4) * 100) },
-    ];
+      // Extract keywords from input
+      const detectedKeywords = keywords.filter((keyword) =>
+        input.includes(keyword.word)
+      );
 
-    // Apply keyword boosts
-    detectedKeywords.forEach((keyword) => {
-      const statIndex = stats.findIndex((s) => s.name === keyword.stat);
-      if (statIndex !== -1) {
-        stats[statIndex].value = Math.min(
-          100,
-          stats[statIndex].value + keyword.boost
-        );
+      // Generate stats with keyword boosts
+      const stats = [
+        { name: "カオス度", value: Math.floor(randomSeed * 100) },
+        { name: "無駄度", value: Math.floor((randomSeed * 0.7 + 0.3) * 100) },
+        { name: "深夜テンション", value: Math.floor((randomSeed * 0.5 + 0.5) * 100) },
+        { name: "猫背指数", value: Math.floor((randomSeed * 0.8 + 0.2) * 100) },
+        { name: "悟りレベル", value: Math.floor((randomSeed * 0.6 + 0.4) * 100) },
+      ];
+
+      // Apply keyword boosts
+      detectedKeywords.forEach((keyword) => {
+        const statIndex = stats.findIndex((s) => s.name === keyword.stat);
+        if (statIndex !== -1) {
+          stats[statIndex].value = Math.min(
+            100,
+            stats[statIndex].value + keyword.boost
+          );
+        }
+      });
+
+      const commentIndex = Math.floor(randomSeed * comments.length);
+      const selectedComment = comments[commentIndex];
+
+      // Generate rationale
+      let rationale = "";
+      let feedback = "";
+      if (detectedKeywords.length > 0) {
+        const keyword = detectedKeywords[0];
+        const boostedStat = stats.find((s) => s.name === keyword.stat);
+        rationale = `入力したテキストの「${keyword.word}」という単語から、あなたの${keyword.stat}が${boostedStat?.value}%と判定されました。`;
+        feedback = keyword.feedback;
+      } else {
+        rationale = `入力文字数${input.length}文字と宇宙的なランダム性から、あなたの本質が${selectedAnimal}であることが判明しました。`;
+        feedback = "あなたの入力から、独特な波長を感じ取れました...";
       }
-    });
 
-    const commentIndex = Math.floor(randomSeed * comments.length);
-    const selectedComment = comments[commentIndex];
-
-    // Generate rationale
-    let rationale = "";
-    if (detectedKeywords.length > 0) {
-      const keyword = detectedKeywords[0];
-      const boostedStat = stats.find((s) => s.name === keyword.stat);
-      rationale = `入力したテキストの「${keyword.word}」という単語から、あなたの${keyword.stat}が${boostedStat?.value}%と判定されました。`;
-    } else {
-      rationale = `入力文字数${input.length}文字と宇宙的なランダム性から、あなたの本質が${selectedAnimal}であることが判明しました。`;
-    }
-
-    setResult({
-      animal: selectedAnimal,
-      stats,
-      comment: selectedComment,
-      rationale,
-    });
+      setResult({
+        animal: selectedAnimal,
+        stats,
+        comment: selectedComment,
+        rationale,
+        feedback,
+      });
+      setIsLoading(false);
+    }, 1500);
   };
 
   return (
@@ -204,13 +220,24 @@ export default function Home() {
           />
           <button
             onClick={handleDiagnosis}
-            className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg font-bold text-lg hover:from-pink-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50"
+            disabled={isLoading}
+            className="w-full py-3 px-6 bg-gradient-to-r from-pink-500 to-purple-600 rounded-lg font-bold text-lg hover:from-pink-600 hover:to-purple-700 transition-all transform hover:scale-105 shadow-lg shadow-purple-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           >
-            診断実行
+            {isLoading ? "診断中..." : "診断実行"}
           </button>
         </div>
 
-        {result && (
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full"></div>
+              <div className="absolute inset-0 border-4 border-transparent border-t-pink-500 rounded-full animate-spin"></div>
+            </div>
+            <p className="text-xl text-gray-300 animate-pulse">診断中...</p>
+          </div>
+        )}
+
+        {result && !isLoading && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="bg-gray-800 rounded-lg p-6 border-2 border-cyan-400 shadow-lg shadow-cyan-400/30">
               <h2 className="text-2xl font-bold text-center mb-4 text-cyan-400">
@@ -226,6 +253,12 @@ export default function Home() {
                 <p className="text-sm text-gray-300">
                   <span className="text-cyan-400 font-bold">診断の根拠：</span>
                   {result.rationale}
+                </p>
+              </div>
+              <div className="mt-4 p-4 bg-purple-900/30 rounded-lg border border-purple-500/50">
+                <p className="text-sm text-gray-300">
+                  <span className="text-purple-400 font-bold">AI解析：</span>
+                  {result.feedback}
                 </p>
               </div>
             </div>
